@@ -83,7 +83,7 @@ export default function IdeaDetailsPage({ params }) {
               </div>
             </div>
 
-            <img src={idea.image} alt={idea.title} className="h-[420px] w-full rounded-lg object-cover" />
+            <img src={idea.image} alt={idea.title} className="h-64 w-full rounded-lg object-cover sm:h-80 lg:h-[420px]" />
 
             <div className="grid gap-4 text-sm md:grid-cols-[190px_1fr]">
               <strong>Problem Statement</strong>

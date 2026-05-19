@@ -59,7 +59,7 @@ export default function ProfilePage() {
           <section className="section-card overflow-hidden">
             <div className="h-28 bg-gradient-to-r from-[#6366F1] to-[#8B5CF6]" />
             <div className="grid gap-8 p-6 md:grid-cols-[260px_1fr]">
-              <aside className="-mt-16 space-y-5 border-r border-slate-200 pr-6">
+              <aside className="-mt-16 space-y-5 border-slate-200 md:border-r md:pr-6">
                 <div className="grid place-items-center text-center">
                   {form.photo ? (
                     <img src={form.photo} alt="Profile" className="h-24 w-24 rounded-full border-4 border-white object-cover" />

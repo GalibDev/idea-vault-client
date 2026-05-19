@@ -19,6 +19,7 @@ export default function Navbar() {
   const { user, logout } = useAuth();
   const { darkMode, toggleTheme } = useTheme();
   const [open, setOpen] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
 
   return (
     <header className="sticky top-0 z-50 border-b border-slate-200/80 bg-white/95 backdrop-blur dark-surface">
@@ -45,6 +46,16 @@ export default function Navbar() {
         </div>
 
         <div className="flex items-center gap-2">
+          <button
+            className="icon-button md:hidden"
+            onClick={() => setMobileOpen((current) => !current)}
+            aria-label="Toggle menu"
+            title="Menu"
+          >
+            <svg width="19" height="19" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path d="M4 7h16M4 12h16M4 17h16" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+            </svg>
+          </button>
           <Link href="/ideas" className="icon-button" aria-label="Search ideas" title="Search ideas">
             <svg width="17" height="17" viewBox="0 0 24 24" fill="none" aria-hidden="true">
               <circle cx="11" cy="11" r="7" stroke="currentColor" strokeWidth="2" />
@@ -114,6 +125,50 @@ export default function Navbar() {
           )}
         </div>
       </nav>
+      {mobileOpen ? (
+        <div className="border-t border-slate-200 bg-white px-4 py-4 shadow-lg dark-surface md:hidden">
+          <div className="mx-auto grid max-w-7xl gap-2 text-sm font-bold text-slate-700">
+            {navItems.map((item) => (
+              <Link
+                key={item.href}
+                href={item.href}
+                onClick={() => setMobileOpen(false)}
+                className={pathname === item.href ? "rounded-md bg-indigo-50 px-3 py-3 text-[#6366F1]" : "rounded-md px-3 py-3 hover:bg-indigo-50 hover:text-[#6366F1]"}
+              >
+                {item.label}
+              </Link>
+            ))}
+            {user ? (
+              <>
+                <Link href="/profile" onClick={() => setMobileOpen(false)} className="rounded-md px-3 py-3 hover:bg-indigo-50 hover:text-[#6366F1]">
+                  Profile Management
+                </Link>
+                <Link href="/bookmarks" onClick={() => setMobileOpen(false)} className="rounded-md px-3 py-3 hover:bg-indigo-50 hover:text-[#6366F1]">
+                  My Bookmarks
+                </Link>
+                <button
+                  onClick={() => {
+                    logout();
+                    setMobileOpen(false);
+                  }}
+                  className="rounded-md px-3 py-3 text-left text-rose-600 hover:bg-rose-50"
+                >
+                  Logout
+                </button>
+              </>
+            ) : (
+              <div className="grid gap-2 pt-2 sm:hidden">
+                <Link href="/login" onClick={() => setMobileOpen(false)} className="btn-primary px-4 py-3 text-center text-sm">
+                  Login
+                </Link>
+                <Link href="/register" onClick={() => setMobileOpen(false)} className="btn-soft px-4 py-3 text-center text-sm">
+                  Register
+                </Link>
+              </div>
+            )}
+          </div>
+        </div>
+      ) : null}
     </header>
   );
 }
