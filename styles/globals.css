@@ -178,6 +178,21 @@ a {
   background: #eef2ff;
 }
 
+.password-rules {
+  display: grid;
+  gap: 6px;
+  border-radius: 8px;
+  background: #f8fafc;
+  padding: 10px 12px;
+  color: #64748b;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.password-rule-valid {
+  color: #059669;
+}
+
 .sr-only {
   position: absolute;
   width: 1px;

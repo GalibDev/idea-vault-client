@@ -11,6 +11,11 @@ export default function RegisterPage() {
   const { register, googleLogin } = useAuth();
   const { showToast } = useToast();
   const [form, setForm] = useState({ name: "", email: "", photo: "", password: "" });
+  const passwordRules = [
+    { label: "At least 6 characters", valid: form.password.length >= 6 },
+    { label: "Includes uppercase letter", valid: /[A-Z]/.test(form.password) },
+    { label: "Includes lowercase letter", valid: /[a-z]/.test(form.password) },
+  ];
 
   const handlePhotoUpload = (event) => {
     const file = event.target.files?.[0];
@@ -72,7 +77,13 @@ export default function RegisterPage() {
               <img src={form.photo} alt="Profile preview" className="mx-auto h-24 w-24 rounded-full object-cover" />
             ) : null}
             <input className="field" type="password" placeholder="Enter your password" value={form.password} onChange={(event) => setForm({ ...form, password: event.target.value })} />
-            <p className="text-xs text-slate-500">Password needs 6 characters, one uppercase, and one lowercase letter.</p>
+            <div className="password-rules">
+              {passwordRules.map((rule) => (
+                <span key={rule.label} className={rule.valid ? "password-rule-valid" : ""}>
+                  {rule.valid ? "OK" : "--"} {rule.label}
+                </span>
+              ))}
+            </div>
             <button className="btn-primary w-full py-3 text-sm" type="submit">Register</button>
           </form>
           <div className="my-6 flex items-center gap-3 text-xs font-bold text-slate-400">
