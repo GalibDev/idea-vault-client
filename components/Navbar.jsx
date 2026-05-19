@@ -83,7 +83,11 @@ export default function Navbar() {
           ) : (
             <div className="relative">
               <button onClick={() => setOpen((current) => !current)} className="avatar" aria-label="User profile">
-                {(user.name || user.email || "U").slice(0, 2).toUpperCase()}
+                {user.photo ? (
+                  <img src={user.photo} alt={user.name || "User profile"} className="h-full w-full rounded-full object-cover" />
+                ) : (
+                  (user.name || user.email || "U").slice(0, 2).toUpperCase()
+                )}
               </button>
               {open ? (
                 <div className="absolute right-0 mt-3 w-56 rounded-lg border border-slate-200 bg-white p-3 shadow-xl">
