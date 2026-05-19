@@ -2,6 +2,9 @@
 node_modules/
 server/node_modules/
 
+# Separate server repository
+server/
+
 # Next.js
 .next/
 out/
