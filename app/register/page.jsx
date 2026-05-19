@@ -11,6 +11,7 @@ export default function RegisterPage() {
   const { register, googleLogin } = useAuth();
   const { showToast } = useToast();
   const [form, setForm] = useState({ name: "", email: "", photo: "", password: "" });
+  const [showPassword, setShowPassword] = useState(false);
   const passwordRules = [
     { label: "At least 6 characters", valid: form.password.length >= 6 },
     { label: "Includes uppercase letter", valid: /[A-Z]/.test(form.password) },
@@ -76,7 +77,36 @@ export default function RegisterPage() {
             {form.photo ? (
               <img src={form.photo} alt="Profile preview" className="mx-auto h-24 w-24 rounded-full object-cover" />
             ) : null}
-            <input className="field" type="password" placeholder="Enter your password" value={form.password} onChange={(event) => setForm({ ...form, password: event.target.value })} />
+            <div className="password-field">
+              <input
+                className="field pr-12"
+                type={showPassword ? "text" : "password"}
+                placeholder="Enter your password"
+                value={form.password}
+                onChange={(event) => setForm({ ...form, password: event.target.value })}
+              />
+              <button
+                type="button"
+                className="password-eye"
+                onClick={() => setShowPassword((current) => !current)}
+                aria-label={showPassword ? "Hide password" : "Show password"}
+                title={showPassword ? "Hide password" : "Show password"}
+              >
+                {showPassword ? (
+                  <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M4 4l16 16" />
+                    <path d="M10.6 10.6a2 2 0 0 0 2.8 2.8" />
+                    <path d="M8.1 5.7A10.4 10.4 0 0 1 12 5c5 0 8.5 4.1 10 7a13.4 13.4 0 0 1-3 3.8" />
+                    <path d="M6.6 6.6A13.8 13.8 0 0 0 2 12c1.5 2.9 5 7 10 7 1.5 0 2.9-.4 4.1-1" />
+                  </svg>
+                ) : (
+                  <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z" />
+                    <circle cx="12" cy="12" r="3" />
+                  </svg>
+                )}
+              </button>
+            </div>
             <div className="password-rules">
               {passwordRules.map((rule) => (
                 <span key={rule.label} className={rule.valid ? "password-rule-valid" : ""}>

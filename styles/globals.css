@@ -193,6 +193,43 @@ a {
   color: #059669;
 }
 
+.password-field {
+  position: relative;
+}
+
+.password-eye {
+  position: absolute;
+  top: 50%;
+  right: 10px;
+  display: grid;
+  width: 34px;
+  height: 34px;
+  place-items: center;
+  border-radius: 999px;
+  color: #64748b;
+  transform: translateY(-50%);
+  transition: background 160ms ease, color 160ms ease;
+}
+
+.password-eye:hover {
+  background: #eef2ff;
+  color: #6366f1;
+}
+
+.password-eye svg {
+  width: 18px;
+  height: 18px;
+}
+
+.password-eye path,
+.password-eye circle {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
 .sr-only {
   position: absolute;
   width: 1px;
