@@ -1,0 +1,109 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import ProtectedRoute from "../../components/ProtectedRoute.jsx";
+import { useToast } from "../../components/Toast.jsx";
+import { useAuth } from "../../context/AuthContext.jsx";
+
+export default function ProfilePage() {
+  const { user, updateProfileData } = useAuth();
+  const { showToast } = useToast();
+  const [form, setForm] = useState({ name: "", email: "", photo: "" });
+
+  useEffect(() => {
+    if (user) {
+      setForm({ name: user.name || "", email: user.email || "", photo: user.photo || "" });
+    }
+  }, [user]);
+
+  const handlePhotoUpload = (event) => {
+    const file = event.target.files?.[0];
+    if (!file) {
+      return;
+    }
+
+    if (!file.type.startsWith("image/")) {
+      showToast("Please select a valid profile image.", "error");
+      return;
+    }
+
+    if (file.size > 1024 * 1024) {
+      showToast("Profile image must be under 1MB.", "error");
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      setForm((current) => ({ ...current, photo: reader.result }));
+      showToast("Profile image preview is ready.");
+    };
+    reader.onerror = () => showToast("Could not read this profile image.", "error");
+    reader.readAsDataURL(file);
+  };
+
+  const saveProfile = async (event) => {
+    event.preventDefault();
+    try {
+      await updateProfileData(form);
+      showToast("Profile updated successfully.");
+    } catch (error) {
+      showToast(error.message, "error");
+    }
+  };
+
+  return (
+    <ProtectedRoute>
+      <div className="page-shell">
+        <div className="content-shell max-w-4xl">
+          <section className="section-card overflow-hidden">
+            <div className="h-28 bg-gradient-to-r from-[#6366F1] to-[#8B5CF6]" />
+            <div className="grid gap-8 p-6 md:grid-cols-[260px_1fr]">
+              <aside className="-mt-16 space-y-5 border-r border-slate-200 pr-6">
+                <div className="grid place-items-center text-center">
+                  {form.photo ? (
+                    <img src={form.photo} alt="Profile" className="h-24 w-24 rounded-full border-4 border-white object-cover" />
+                  ) : (
+                    <div className="grid h-24 w-24 place-items-center rounded-full border-4 border-white bg-slate-950 text-2xl font-extrabold text-white">
+                      {(form.name || "User").slice(0, 2).toUpperCase()}
+                    </div>
+                  )}
+                  <h1 className="mt-3 text-xl font-extrabold text-slate-950 dark-text">{form.name || "IdeaVault User"}</h1>
+                  <p className="text-sm text-slate-500">Entrepreneur & Idea Enthusiast</p>
+                </div>
+                <nav className="space-y-2 text-sm font-bold text-slate-600">
+                  <p className="rounded-md bg-indigo-50 px-3 py-2 text-[#6366F1]">Profile Information</p>
+                  <p className="px-3 py-2">Change Password</p>
+                  <p className="px-3 py-2">My Bookmarks</p>
+                  <p className="px-3 py-2">Account Settings</p>
+                </nav>
+              </aside>
+              <form className="space-y-4" onSubmit={saveProfile}>
+                <h2 className="text-xl font-extrabold text-slate-950 dark-text">Profile Information</h2>
+                <label className="block">
+                  <span className="mb-2 block text-sm font-bold text-slate-700">Name</span>
+                  <input className="field" value={form.name} onChange={(event) => setForm({ ...form, name: event.target.value })} />
+                </label>
+                <label className="block">
+                  <span className="mb-2 block text-sm font-bold text-slate-700">Email</span>
+                  <input className="field" value={form.email} onChange={(event) => setForm({ ...form, email: event.target.value })} />
+                </label>
+                <div>
+                  <span className="mb-2 block text-sm font-bold text-slate-700">Profile Image</span>
+                  <label className="upload-box">
+                    <input className="sr-only" type="file" accept="image/*" onChange={handlePhotoUpload} />
+                    <span className="text-sm font-extrabold text-[#6366F1]">Click to upload profile image</span>
+                    <span className="mt-1 text-xs text-slate-500">PNG, JPG, WEBP under 1MB</span>
+                  </label>
+                  {form.photo ? (
+                    <img src={form.photo} alt="Profile preview" className="mt-3 h-28 w-28 rounded-full object-cover" />
+                  ) : null}
+                </div>
+                <button className="btn-primary px-5 py-3 text-sm" type="submit">Update Profile</button>
+              </form>
+            </div>
+          </section>
+        </div>
+      </div>
+    </ProtectedRoute>
+  );
+}
