@@ -5,8 +5,10 @@ import IdeaCard from "../../components/IdeaCard.jsx";
 import { ideas } from "../../data/ideas.js";
 
 export default function IdeasPage() {
-  const [search, setSearch] = useState("");
-  const [category, setCategory] = useState("All Categories");
+  const [draftSearch, setDraftSearch] = useState("");
+  const [draftCategory, setDraftCategory] = useState("All Categories");
+  const [draftSort, setDraftSort] = useState("Latest");
+  const [filters, setFilters] = useState({ search: "", category: "All Categories", sort: "Latest" });
   const [remoteIdeas, setRemoteIdeas] = useState([]);
 
   useEffect(() => {
@@ -19,39 +21,80 @@ export default function IdeasPage() {
   const allIdeas = [...remoteIdeas, ...ideas];
   const categories = ["All Categories", ...Array.from(new Set(allIdeas.map((idea) => idea.category).filter(Boolean)))];
   const filteredIdeas = useMemo(() => {
-    return allIdeas.filter((idea) => {
-      const matchesSearch = idea.title.toLowerCase().includes(search.toLowerCase());
-      const matchesCategory = category === "All Categories" || idea.category === category;
+    const filtered = allIdeas.filter((idea) => {
+      const matchesSearch = idea.title.toLowerCase().includes(filters.search.toLowerCase());
+      const matchesCategory = filters.category === "All Categories" || idea.category === filters.category;
       return matchesSearch && matchesCategory;
     });
-  }, [allIdeas, category, search]);
+
+    if (filters.sort === "Most Liked") {
+      return filtered.sort((a, b) => Number(b.likes || 0) - Number(a.likes || 0));
+    }
+
+    if (filters.sort === "Most Discussed") {
+      return filtered.sort((a, b) => Number(b.comments || 0) - Number(a.comments || 0));
+    }
+
+    return filtered.sort((a, b) => {
+      const aDate = new Date(a.createdAt || a.date || 0).getTime();
+      const bDate = new Date(b.createdAt || b.date || 0).getTime();
+      return bDate - aDate;
+    });
+  }, [allIdeas, filters]);
+
+  const applyFilters = () => {
+    setFilters({
+      search: draftSearch.trim(),
+      category: draftCategory,
+      sort: draftSort,
+    });
+  };
+
+  const clearFilters = () => {
+    setDraftSearch("");
+    setDraftCategory("All Categories");
+    setDraftSort("Latest");
+    setFilters({ search: "", category: "All Categories", sort: "Latest" });
+  };
 
   return (
     <div className="page-shell">
       <div className="content-shell space-y-6">
-        <div className="grid gap-3 md:grid-cols-[1fr_220px_180px_90px]">
+        <div className="grid gap-3 md:grid-cols-[1fr_220px_180px_90px_90px]">
           <input
             className="field"
             placeholder="Search ideas by title..."
-            value={search}
-            onChange={(event) => setSearch(event.target.value)}
+            value={draftSearch}
+            onChange={(event) => setDraftSearch(event.target.value)}
+            onKeyDown={(event) => {
+              if (event.key === "Enter") {
+                applyFilters();
+              }
+            }}
           />
-          <select className="field" value={category} onChange={(event) => setCategory(event.target.value)}>
+          <select className="field" value={draftCategory} onChange={(event) => setDraftCategory(event.target.value)}>
             {categories.map((item) => (
               <option key={item}>{item}</option>
             ))}
           </select>
-          <select className="field" defaultValue="Latest">
+          <select className="field" value={draftSort} onChange={(event) => setDraftSort(event.target.value)}>
             <option>Latest</option>
             <option>Most Liked</option>
             <option>Most Discussed</option>
           </select>
-          <button className="btn-primary px-4 py-3 text-sm">Filter</button>
+          <button className="btn-primary px-4 py-3 text-sm" onClick={applyFilters}>Filter</button>
+          <button className="btn-soft px-4 py-3 text-sm" onClick={clearFilters}>Clear</button>
         </div>
+
+        <p className="text-sm font-semibold text-slate-500">
+          Showing {filteredIdeas.length} ideas
+          {filters.search ? ` for "${filters.search}"` : ""}
+          {filters.category !== "All Categories" ? ` in ${filters.category}` : ""}
+        </p>
 
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {filteredIdeas.map((idea) => (
-            <IdeaCard key={idea.id} idea={idea} />
+            <IdeaCard key={idea._id || idea.id} idea={idea} />
           ))}
         </div>
 
