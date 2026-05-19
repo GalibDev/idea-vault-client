@@ -96,6 +96,9 @@ export default function Navbar() {
                   <Link href="/profile" className="mt-3 block rounded-md px-3 py-2 text-sm font-bold text-slate-700 hover:bg-indigo-50">
                     Profile Management
                   </Link>
+                  <Link href="/bookmarks" className="block rounded-md px-3 py-2 text-sm font-bold text-slate-700 hover:bg-indigo-50">
+                    My Bookmarks
+                  </Link>
                   <button
                     onClick={() => {
                       logout();

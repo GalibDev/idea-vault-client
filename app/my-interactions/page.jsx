@@ -1,3 +1,4 @@
+import Link from "next/link";
 import ProtectedRoute from "../../components/ProtectedRoute.jsx";
 import { ideas } from "../../data/ideas.js";
 
@@ -8,7 +9,7 @@ export default function MyInteractionsPage() {
         <div className="content-shell max-w-3xl">
           <div className="mb-5 flex gap-7 border-b border-slate-200 text-sm font-bold text-slate-500">
             <span className="border-b-2 border-[#6366F1] pb-3 text-[#6366F1]">Commented Ideas</span>
-            <span className="pb-3">Bookmarks</span>
+            <Link href="/bookmarks" className="pb-3 hover:text-[#6366F1]">Bookmarks</Link>
             <span className="pb-3">Likes</span>
           </div>
           <div className="space-y-4">

@@ -10,6 +10,7 @@ const titles = {
   "/my-ideas": "IdeaVault | My Ideas",
   "/my-interactions": "IdeaVault | My Interactions",
   "/profile": "IdeaVault | Profile",
+  "/bookmarks": "IdeaVault | Bookmarks",
   "/login": "IdeaVault | Login",
   "/register": "IdeaVault | Register",
 };

@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import ProtectedRoute from "../../components/ProtectedRoute.jsx";
 import { useToast } from "../../components/Toast.jsx";
@@ -73,7 +74,7 @@ export default function ProfilePage() {
                 <nav className="space-y-2 text-sm font-bold text-slate-600">
                   <p className="rounded-md bg-indigo-50 px-3 py-2 text-[#6366F1]">Profile Information</p>
                   <p className="px-3 py-2">Change Password</p>
-                  <p className="px-3 py-2">My Bookmarks</p>
+                  <Link href="/bookmarks" className="block px-3 py-2 hover:text-[#6366F1]">My Bookmarks</Link>
                   <p className="px-3 py-2">Account Settings</p>
                 </nav>
               </aside>
