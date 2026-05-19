@@ -5,15 +5,23 @@ import { useEffect, useState } from "react";
 import { useToast } from "./Toast.jsx";
 
 const bookmarksKey = "ideavault-bookmarks";
+const likesKey = "ideavault-liked-ideas";
 
 export default function IdeaCard({ idea, compact = false }) {
   const ideaId = String(idea._id || idea.id);
   const { showToast } = useToast() || {};
   const [bookmarked, setBookmarked] = useState(false);
+  const [liked, setLiked] = useState(false);
+  const [likeCount, setLikeCount] = useState(Number(idea.likes) || 0);
 
   useEffect(() => {
-    const saved = JSON.parse(localStorage.getItem(bookmarksKey) || "[]");
-    setBookmarked(saved.some((item) => String(item._id || item.id) === ideaId));
+    const savedBookmarks = JSON.parse(localStorage.getItem(bookmarksKey) || "[]");
+    const savedLikes = JSON.parse(localStorage.getItem(likesKey) || "{}");
+    const likeState = savedLikes[ideaId];
+
+    setBookmarked(savedBookmarks.some((item) => String(item._id || item.id) === ideaId));
+    setLiked(Boolean(likeState?.liked));
+    setLikeCount(Number(likeState?.count ?? idea.likes) || 0);
   }, [ideaId]);
 
   const toggleBookmark = () => {
@@ -24,6 +32,19 @@ export default function IdeaCard({ idea, compact = false }) {
     localStorage.setItem(bookmarksKey, JSON.stringify(next));
     setBookmarked(!exists);
     showToast?.(exists ? "Bookmark removed." : "Idea bookmarked successfully.");
+  };
+
+  const toggleLike = () => {
+    const savedLikes = JSON.parse(localStorage.getItem(likesKey) || "{}");
+    const current = savedLikes[ideaId] || { liked: false, count: likeCount };
+    const nextLiked = !current.liked;
+    const nextCount = Math.max(0, Number(current.count || 0) + (nextLiked ? 1 : -1));
+
+    savedLikes[ideaId] = { liked: nextLiked, count: nextCount };
+    localStorage.setItem(likesKey, JSON.stringify(savedLikes));
+    setLiked(nextLiked);
+    setLikeCount(nextCount);
+    showToast?.(nextLiked ? "Idea liked." : "Like removed.");
   };
 
   return (
@@ -37,13 +58,16 @@ export default function IdeaCard({ idea, compact = false }) {
         <p className="text-xs font-medium text-slate-500">{idea.category}</p>
         {!compact ? <p className="line-clamp-2 text-sm text-slate-600">{idea.summary}</p> : null}
         <div className="flex items-center gap-5 pt-2 text-xs font-medium text-slate-500">
-          <span>Likes {idea.likes || 0}</span>
+          <span>Likes {likeCount}</span>
           <span>Comments {idea.comments || 0}</span>
         </div>
         <div className="flex flex-wrap gap-2 pt-2">
           <Link href={`/ideas/${ideaId}`} className="btn-primary inline-flex px-4 py-2 text-xs">
             View Details
           </Link>
+          <button type="button" className="btn-soft px-4 py-2 text-xs" onClick={toggleLike}>
+            {liked ? "Liked" : "Like"}
+          </button>
           <button type="button" className="btn-soft px-4 py-2 text-xs" onClick={toggleBookmark}>
             {bookmarked ? "Bookmarked" : "Bookmark"}
           </button>
