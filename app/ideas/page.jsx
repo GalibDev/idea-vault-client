@@ -10,12 +10,15 @@ export default function IdeasPage() {
   const [draftSort, setDraftSort] = useState("Latest");
   const [filters, setFilters] = useState({ search: "", category: "All Categories", sort: "Latest" });
   const [remoteIdeas, setRemoteIdeas] = useState([]);
+  const [loadingIdeas, setLoadingIdeas] = useState(true);
 
   useEffect(() => {
+    setLoadingIdeas(true);
     fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/ideas`)
       .then((response) => response.json())
       .then((data) => setRemoteIdeas(Array.isArray(data) ? data : []))
-      .catch(() => setRemoteIdeas([]));
+      .catch(() => setRemoteIdeas([]))
+      .finally(() => setLoadingIdeas(false));
   }, []);
 
   const allIdeas = [...remoteIdeas, ...ideas];
@@ -92,11 +95,18 @@ export default function IdeasPage() {
           {filters.category !== "All Categories" ? ` in ${filters.category}` : ""}
         </p>
 
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {filteredIdeas.map((idea) => (
-            <IdeaCard key={idea._id || idea.id} idea={idea} />
-          ))}
-        </div>
+        {loadingIdeas ? (
+          <section className="section-card p-10 text-center">
+            <div className="loading-spinner" />
+            <p className="text-sm font-semibold text-slate-500">Loading ideas from database...</p>
+          </section>
+        ) : (
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {filteredIdeas.map((idea) => (
+              <IdeaCard key={idea._id || idea.id} idea={idea} />
+            ))}
+          </div>
+        )}
 
         <div className="flex justify-center gap-3 pt-4">
           {["1", "2", "3", "...", "8", ">"].map((page) => (
