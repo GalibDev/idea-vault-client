@@ -236,6 +236,13 @@ export default function IdeaDetailsPage({ params }) {
 
             <img src={idea.image} alt={idea.title} className="h-64 w-full rounded-lg object-cover sm:h-80 lg:h-[420px]" />
 
+            <div className="space-y-3 rounded-lg bg-slate-50 p-5">
+              <p className="text-base font-semibold leading-7 text-slate-700">{idea.summary}</p>
+              {idea.description ? (
+                <p className="text-sm leading-7 text-slate-600">{idea.description}</p>
+              ) : null}
+            </div>
+
             <div className="grid gap-4 text-sm md:grid-cols-[190px_1fr]">
               <strong>Problem Statement</strong>
               <p className="text-slate-600">{idea.problem}</p>
