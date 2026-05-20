@@ -13,6 +13,7 @@ export default function LoginPage() {
   const { showToast } = useToast();
   const [form, setForm] = useState({ email: "", password: "" });
   const [showPassword, setShowPassword] = useState(false);
+  const [showForgot, setShowForgot] = useState(false);
 
   const redirectTo = params.get("redirect") || "/";
 
@@ -71,7 +72,13 @@ export default function LoginPage() {
                 )}
               </button>
             </div>
-            <button type="button" className="block w-full text-right text-xs font-bold text-[#6366F1]">Forgot Password?</button>
+            <button
+              type="button"
+              className="block w-full text-right text-xs font-bold text-[#6366F1]"
+              onClick={() => setShowForgot(true)}
+            >
+              Forgot Password?
+            </button>
             <button className="btn-primary w-full py-3 text-sm" type="submit">Login</button>
           </form>
           <div className="my-6 flex items-center gap-3 text-xs font-bold text-slate-400">
@@ -82,6 +89,19 @@ export default function LoginPage() {
             Don't have an account? <Link className="font-bold text-[#6366F1]" href="/register">Register</Link>
           </p>
         </section>
+        {showForgot ? (
+          <div className="modal-backdrop">
+            <section className="section-card w-full max-w-md p-6 text-center">
+              <h2 className="text-xl font-extrabold text-slate-950 dark-text">Password recovery</h2>
+              <p className="mt-3 text-sm text-slate-500">
+                Password reset is UI only for this project. No reset email will be sent.
+              </p>
+              <button className="btn-primary mt-5 px-5 py-3 text-sm" onClick={() => setShowForgot(false)}>
+                Got it
+              </button>
+            </section>
+          </div>
+        ) : null}
       </div>
     </div>
   );
