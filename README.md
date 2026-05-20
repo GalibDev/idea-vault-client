@@ -1,6 +1,6 @@
 # IdeaVault
 
-Live site URL: `https://your-ideavault-live-site.vercel.app`
+Live site URL: `https://idea-vault-client-sigma.vercel.app`
 
 IdeaVault is a startup idea sharing platform where users can publish concepts, explore community ideas, validate opportunities, and discuss improvements through comments.
 
