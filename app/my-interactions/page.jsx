@@ -7,16 +7,19 @@ import { ideas } from "../../data/ideas.js";
 const likedIdeasKey = "ideavault-liked-ideas";
 const likedIdeaItemsKey = "ideavault-liked-idea-items";
 const bookmarksKey = "ideavault-bookmarks";
+const commentActivityKey = "ideavault-commented-ideas";
 
 export default function MyInteractionsPage() {
   const [activeTab, setActiveTab] = useState("Comments");
   const [bookmarks, setBookmarks] = useState([]);
   const [likedIdeas, setLikedIdeas] = useState([]);
+  const [commentedIdeas, setCommentedIdeas] = useState([]);
 
   useEffect(() => {
     const savedBookmarks = JSON.parse(localStorage.getItem(bookmarksKey) || "[]");
     const savedLikedMap = JSON.parse(localStorage.getItem(likedIdeasKey) || "{}");
     const savedLikedItems = JSON.parse(localStorage.getItem(likedIdeaItemsKey) || "[]");
+    const savedCommentedIdeas = JSON.parse(localStorage.getItem(commentActivityKey) || "[]");
     const likedIds = Object.keys(savedLikedMap).filter((id) => savedLikedMap[id]?.liked);
     const fallbackLikedIdeas = ideas.filter((idea) => likedIds.includes(String(idea.id)));
     const mergedLikedIdeas = [
@@ -30,6 +33,7 @@ export default function MyInteractionsPage() {
 
     setBookmarks(savedBookmarks);
     setLikedIdeas(uniqueLikedIdeas);
+    setCommentedIdeas(savedCommentedIdeas);
   }, []);
 
   const tabs = [
@@ -67,18 +71,21 @@ export default function MyInteractionsPage() {
 
           <div className="space-y-4">
             {activeTab === "Comments" ? (
-              ideas.slice(0, 3).map((idea, index) => (
-                <article key={idea.id} className="section-card flex gap-4 p-4">
+              commentedIdeas.length ? commentedIdeas.map((idea) => (
+                <article key={idea._id || idea.id} className="section-card flex gap-4 p-4">
                   <img src={idea.image} alt={idea.title} className="h-20 w-28 rounded-md object-cover" />
                   <div>
                     <h2 className="font-extrabold text-slate-950 dark-text">{idea.title}</h2>
-                    <p className="text-xs text-slate-400">You commented on May {12 - index}, 2024</p>
-                    <p className="mt-2 text-sm text-slate-600">
-                      {index === 0 ? "Great idea! This can really help students." : "How will the data be secured?"}
-                    </p>
+                    <p className="text-xs text-slate-400">You commented on {idea.commentDate}</p>
+                    <p className="mt-2 text-sm text-slate-600">{idea.commentText}</p>
                   </div>
                 </article>
-              ))
+              )) : (
+                <section className="section-card p-8 text-center">
+                  <h2 className="text-xl font-extrabold text-slate-950 dark-text">No commented ideas yet</h2>
+                  <p className="mt-2 text-slate-500">Add comments from an idea details page to see them here.</p>
+                </section>
+              )
             ) : null}
 
             {activeTab === "Bookmarks" ? (
