@@ -38,16 +38,22 @@ function saveProfileCache(nextUser) {
 }
 
 async function getServerToken(nextUser) {
+  const controller = new AbortController();
+  const timeout = window.setTimeout(() => controller.abort(), 2500);
+
   try {
     const response = await fetch(`${apiUrl}/jwt`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
+      signal: controller.signal,
       body: JSON.stringify({ email: nextUser.email, name: nextUser.name }),
     });
     const data = await response.json();
     return data.token || createDemoToken(nextUser.email);
   } catch {
     return createDemoToken(nextUser.email);
+  } finally {
+    window.clearTimeout(timeout);
   }
 }
 
@@ -58,23 +64,32 @@ export function AuthProvider({ children }) {
   const firebaseReady = hasFirebaseConfig();
 
   useEffect(() => {
+    const saved = localStorage.getItem(sessionKey);
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      setUser(parsed.user);
+      setToken(parsed.token);
+      setAuthReady(true);
+    }
+
     if (!firebaseReady || !auth) {
-      const saved = localStorage.getItem(sessionKey);
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        setUser(parsed.user);
-        setToken(parsed.token);
-      }
       setAuthReady(true);
       return undefined;
     }
 
-    return onAuthStateChanged(auth, async (firebaseUser) => {
+    const readyFallback = window.setTimeout(() => {
+      setAuthReady(true);
+    }, 3000);
+
+    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       if (!firebaseUser) {
-        setUser(null);
-        setToken(null);
-        localStorage.removeItem(sessionKey);
+        if (!saved) {
+          setUser(null);
+          setToken(null);
+          localStorage.removeItem(sessionKey);
+        }
         setAuthReady(true);
+        window.clearTimeout(readyFallback);
         return;
       }
 
@@ -84,7 +99,13 @@ export function AuthProvider({ children }) {
       setToken(nextToken);
       localStorage.setItem(sessionKey, JSON.stringify({ user: nextUser, token: nextToken }));
       setAuthReady(true);
+      window.clearTimeout(readyFallback);
     });
+
+    return () => {
+      window.clearTimeout(readyFallback);
+      unsubscribe();
+    };
   }, [firebaseReady]);
 
   const persistDemoSession = async (nextUser) => {

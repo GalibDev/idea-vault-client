@@ -17,10 +17,10 @@ export default function LoginPage() {
 
   const redirectTo = params.get("redirect") || "/";
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
     try {
-      login(form.email, form.password);
+      await login(form.email, form.password);
       showToast("Login successful. Welcome back to IdeaVault.");
       router.push(redirectTo);
     } catch (error) {
@@ -28,8 +28,8 @@ export default function LoginPage() {
     }
   };
 
-  const handleGoogle = () => {
-    googleLogin();
+  const handleGoogle = async () => {
+    await googleLogin();
     showToast("Google login successful.");
     router.push(redirectTo);
   };
