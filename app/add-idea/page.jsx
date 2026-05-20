@@ -92,8 +92,8 @@ export default function AddIdeaPage() {
                   <span className="mb-2 block text-sm font-bold text-slate-700">Image URL</span>
                   <input
                     className="field"
-                    type="url"
-                    placeholder="https://example.com/idea-image.jpg"
+                    type="text"
+                    placeholder="https://example.com/idea-image.jpg or /images/idea-image.jpg"
                     value={form.image}
                     onChange={(event) => update("image", event.target.value)}
                   />

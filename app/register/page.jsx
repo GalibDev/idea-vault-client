@@ -48,8 +48,8 @@ export default function RegisterPage() {
               <span className="mb-2 block text-sm font-bold text-slate-700">Photo URL</span>
               <input
                 className="field"
-                type="url"
-                placeholder="https://example.com/profile.jpg"
+                type="text"
+                placeholder="https://example.com/profile.jpg or /images/profile.jpg"
                 value={form.photo}
                 onChange={(event) => setForm({ ...form, photo: event.target.value })}
               />
