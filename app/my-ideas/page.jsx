@@ -3,18 +3,39 @@
 import { useEffect, useState } from "react";
 import ProtectedRoute from "../../components/ProtectedRoute.jsx";
 import { useToast } from "../../components/Toast.jsx";
+import { useAuth } from "../../context/AuthContext.jsx";
 import { ideas } from "../../data/ideas.js";
+
+const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
 export default function MyIdeasPage() {
   const { showToast } = useToast();
+  const { token } = useAuth();
   const [myIdeas, setMyIdeas] = useState([]);
   const [editing, setEditing] = useState(null);
+  const [deleteTarget, setDeleteTarget] = useState(null);
   const [activeTab, setActiveTab] = useState("All Ideas");
 
   useEffect(() => {
     const saved = JSON.parse(localStorage.getItem("ideavault-my-ideas") || "[]");
     setMyIdeas(saved.length ? saved : ideas.slice(0, 3).map((idea) => ({ ...idea, status: idea.status || "Published" })));
-  }, []);
+
+    if (!token) {
+      return;
+    }
+
+    fetch(`${apiUrl}/my-ideas`, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        if (Array.isArray(data) && data.length) {
+          setMyIdeas(data);
+          localStorage.setItem("ideavault-my-ideas", JSON.stringify(data));
+        }
+      })
+      .catch(() => null);
+  }, [token]);
 
   const tabs = ["All Ideas", "Published", "Drafts"];
   const visibleIdeas = myIdeas.filter((idea) => {
@@ -32,16 +53,57 @@ export default function MyIdeasPage() {
     localStorage.setItem("ideavault-my-ideas", JSON.stringify(items));
   };
 
-  const deleteIdea = (id) => {
-    persist(myIdeas.filter((idea) => (idea._id || idea.id) !== id));
-    showToast("Idea deleted successfully.");
+  const deleteIdea = async () => {
+    const id = deleteTarget?._id || deleteTarget?.id;
+    if (!id) {
+      return;
+    }
+
+    try {
+      if (token && deleteTarget?._id) {
+        const response = await fetch(`${apiUrl}/ideas/${id}`, {
+          method: "DELETE",
+          headers: { Authorization: `Bearer ${token}` },
+        });
+
+        if (!response.ok) {
+          throw new Error("Could not delete idea from database.");
+        }
+      }
+
+      persist(myIdeas.filter((idea) => (idea._id || idea.id) !== id));
+      setDeleteTarget(null);
+      showToast("Idea deleted successfully.");
+    } catch (error) {
+      showToast(error.message, "error");
+    }
   };
 
-  const saveEdit = () => {
+  const saveEdit = async () => {
     const editingId = editing._id || editing.id;
-    persist(myIdeas.map((idea) => (idea._id || idea.id) === editingId ? editing : idea));
-    setEditing(null);
-    showToast("Idea updated successfully.");
+
+    try {
+      if (token && editing._id) {
+        const response = await fetch(`${apiUrl}/ideas/${editingId}`, {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify(editing),
+        });
+
+        if (!response.ok) {
+          throw new Error("Could not update idea in database.");
+        }
+      }
+
+      persist(myIdeas.map((idea) => (idea._id || idea.id) === editingId ? editing : idea));
+      setEditing(null);
+      showToast("Idea updated successfully.");
+    } catch (error) {
+      showToast(error.message, "error");
+    }
   };
 
   return (
@@ -85,7 +147,7 @@ export default function MyIdeasPage() {
                     >
                       Move to {idea.status === "Draft" ? "Published" : "Draft"}
                     </button>
-                    <button className="rounded-md bg-rose-50 px-3 py-2 text-xs font-bold text-rose-600" onClick={() => deleteIdea(idea._id || idea.id)}>Delete</button>
+                    <button className="rounded-md bg-rose-50 px-3 py-2 text-xs font-bold text-rose-600" onClick={() => setDeleteTarget(idea)}>Delete</button>
                   </div>
                 </div>
               </article>
@@ -110,6 +172,20 @@ export default function MyIdeasPage() {
                 <div className="mt-4 flex justify-end gap-3">
                   <button className="btn-soft px-4 py-2 text-sm" onClick={() => setEditing(null)}>Cancel</button>
                   <button className="btn-primary px-4 py-2 text-sm" onClick={saveEdit}>Save</button>
+                </div>
+              </div>
+            </div>
+          ) : null}
+          {deleteTarget ? (
+            <div className="modal-backdrop">
+              <div className="section-card w-full max-w-md p-6">
+                <h2 className="text-xl font-extrabold text-slate-950">Delete Idea?</h2>
+                <p className="mt-2 text-sm text-slate-500">
+                  This will remove "{deleteTarget.title}" from your ideas. This action cannot be undone.
+                </p>
+                <div className="mt-5 flex justify-end gap-3">
+                  <button className="btn-soft px-4 py-2 text-sm" onClick={() => setDeleteTarget(null)}>Cancel</button>
+                  <button className="rounded-md bg-rose-600 px-4 py-2 text-sm font-bold text-white" onClick={deleteIdea}>Confirm Delete</button>
                 </div>
               </div>
             </div>
