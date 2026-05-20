@@ -25,8 +25,12 @@ export default function Navbar() {
     <header className="sticky top-0 z-50 border-b border-slate-200/80 bg-white/95 backdrop-blur dark-surface">
       <nav className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-4 sm:px-6 lg:px-8">
         <Link href="/" className="flex items-center gap-2 text-xl font-extrabold tracking-tight text-slate-950 dark-text">
-          <span className="grid h-8 w-8 place-items-center rounded-full bg-gradient-to-br from-[#6366F1] to-[#8B5CF6] text-base text-white">
-            IV
+          <span className="brand-mark" aria-hidden="true">
+            <svg viewBox="0 0 40 40">
+              <path d="M20 5c-6.1 0-10.8 4.7-10.8 10.5 0 3.7 1.8 6.1 4.1 8.3 1.5 1.4 2.3 2.9 2.5 5h8.4c.2-2.1 1-3.6 2.5-5 2.3-2.2 4.1-4.6 4.1-8.3C30.8 9.7 26.1 5 20 5Z" />
+              <path d="M16 31h8M17 35h6" />
+              <path d="M16.8 15.7 20 12.5l3.2 3.2M20 12.7v10.2" />
+            </svg>
           </span>
           <span>
             Idea<span className="text-[#6366F1]">Vault</span>

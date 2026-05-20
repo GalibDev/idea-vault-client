@@ -106,6 +106,42 @@ a {
   line-height: 1;
 }
 
+.brand-mark {
+  display: grid;
+  width: 40px;
+  height: 40px;
+  place-items: center;
+  border-radius: 12px;
+  background:
+    radial-gradient(circle at 68% 22%, rgba(255, 255, 255, 0.35), transparent 18%),
+    linear-gradient(135deg, #6366f1, #8b5cf6);
+  box-shadow: 0 12px 26px rgba(99, 102, 241, 0.25);
+  color: #ffffff;
+}
+
+.brand-mark-small {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+}
+
+.brand-mark svg {
+  width: 27px;
+  height: 27px;
+}
+
+.brand-mark path {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.brand-mark path:first-child {
+  fill: rgba(255, 255, 255, 0.18);
+}
+
 .avatar img {
   display: block;
   width: 100%;

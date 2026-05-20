@@ -5,7 +5,16 @@ export default function Footer() {
     <footer className="mt-12 bg-[#020617] text-white">
       <div className="mx-auto grid max-w-7xl gap-8 px-4 py-8 text-sm sm:px-6 md:grid-cols-4 lg:px-8">
         <div>
-          <h2 className="text-lg font-extrabold">IdeaVault</h2>
+          <div className="flex items-center gap-2">
+            <span className="brand-mark brand-mark-small" aria-hidden="true">
+              <svg viewBox="0 0 40 40">
+                <path d="M20 5c-6.1 0-10.8 4.7-10.8 10.5 0 3.7 1.8 6.1 4.1 8.3 1.5 1.4 2.3 2.9 2.5 5h8.4c.2-2.1 1-3.6 2.5-5 2.3-2.2 4.1-4.6 4.1-8.3C30.8 9.7 26.1 5 20 5Z" />
+                <path d="M16 31h8M17 35h6" />
+                <path d="M16.8 15.7 20 12.5l3.2 3.2M20 12.7v10.2" />
+              </svg>
+            </span>
+            <h2 className="text-lg font-extrabold">IdeaVault</h2>
+          </div>
           <p className="mt-2 text-slate-300">A community space for startup idea validation and feedback.</p>
         </div>
         <div>
@@ -19,7 +28,7 @@ export default function Footer() {
         <div>
           <h3 className="font-extrabold">Contact</h3>
           <div className="mt-3 grid gap-2 text-slate-300">
-            <span>support@ideavault.com</span>
+            <a href="mailto:mirza.galib.palash@gmail.com" className="hover:text-white">mirza.galib.palash@gmail.com</a>
             <span>Dhaka, Bangladesh</span>
           </div>
         </div>
