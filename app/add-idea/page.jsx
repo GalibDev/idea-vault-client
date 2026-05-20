@@ -25,31 +25,6 @@ export default function AddIdeaPage() {
 
   const update = (key, value) => setForm((current) => ({ ...current, [key]: value }));
 
-  const handleImageUpload = (event) => {
-    const file = event.target.files?.[0];
-    if (!file) {
-      return;
-    }
-
-    if (!file.type.startsWith("image/")) {
-      showToast("Please select a valid image file.", "error");
-      return;
-    }
-
-    if (file.size > 2 * 1024 * 1024) {
-      showToast("Image size must be under 2MB.", "error");
-      return;
-    }
-
-    const reader = new FileReader();
-    reader.onload = () => {
-      update("image", reader.result);
-      showToast("Image uploaded and preview is ready.");
-    };
-    reader.onerror = () => showToast("Could not read this image file.", "error");
-    reader.readAsDataURL(file);
-  };
-
   const handleSubmit = async (event) => {
     event.preventDefault();
     if (!form.title || !form.summary || !form.description || !form.image || !form.targetAudience || !form.problem || !form.solution) {
@@ -113,11 +88,15 @@ export default function AddIdeaPage() {
             </div>
             <div className="grid gap-4 md:grid-cols-2">
               <div>
-                <span className="mb-2 block text-sm font-bold text-slate-700">Idea Image</span>
-                <label className="upload-box">
-                  <input className="sr-only" type="file" accept="image/*" onChange={handleImageUpload} />
-                  <span className="text-sm font-extrabold text-[#6366F1]">Click to upload image</span>
-                  <span className="mt-1 text-xs text-slate-500">PNG, JPG, WEBP under 2MB</span>
+                <label className="block">
+                  <span className="mb-2 block text-sm font-bold text-slate-700">Image URL</span>
+                  <input
+                    className="field"
+                    type="url"
+                    placeholder="https://example.com/idea-image.jpg"
+                    value={form.image}
+                    onChange={(event) => update("image", event.target.value)}
+                  />
                 </label>
                 {form.image ? (
                   <img src={form.image} alt="Idea preview" className="mt-3 h-36 w-full rounded-md object-cover" />

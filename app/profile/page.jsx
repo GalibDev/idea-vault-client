@@ -17,31 +17,6 @@ export default function ProfilePage() {
     }
   }, [user]);
 
-  const handlePhotoUpload = (event) => {
-    const file = event.target.files?.[0];
-    if (!file) {
-      return;
-    }
-
-    if (!file.type.startsWith("image/")) {
-      showToast("Please select a valid profile image.", "error");
-      return;
-    }
-
-    if (file.size > 1024 * 1024) {
-      showToast("Profile image must be under 1MB.", "error");
-      return;
-    }
-
-    const reader = new FileReader();
-    reader.onload = () => {
-      setForm((current) => ({ ...current, photo: reader.result }));
-      showToast("Profile image preview is ready.");
-    };
-    reader.onerror = () => showToast("Could not read this profile image.", "error");
-    reader.readAsDataURL(file);
-  };
-
   const saveProfile = async (event) => {
     event.preventDefault();
     try {
@@ -89,11 +64,15 @@ export default function ProfilePage() {
                   <input className="field" value={form.email} onChange={(event) => setForm({ ...form, email: event.target.value })} />
                 </label>
                 <div>
-                  <span className="mb-2 block text-sm font-bold text-slate-700">Profile Image</span>
-                  <label className="upload-box">
-                    <input className="sr-only" type="file" accept="image/*" onChange={handlePhotoUpload} />
-                    <span className="text-sm font-extrabold text-[#6366F1]">Click to upload profile image</span>
-                    <span className="mt-1 text-xs text-slate-500">PNG, JPG, WEBP under 1MB</span>
+                  <label className="block">
+                    <span className="mb-2 block text-sm font-bold text-slate-700">Photo URL</span>
+                    <input
+                      className="field"
+                      type="url"
+                      placeholder="https://example.com/profile.jpg"
+                      value={form.photo}
+                      onChange={(event) => setForm({ ...form, photo: event.target.value })}
+                    />
                   </label>
                   {form.photo ? (
                     <img src={form.photo} alt="Profile preview" className="mt-3 h-28 w-28 rounded-full object-cover" />
