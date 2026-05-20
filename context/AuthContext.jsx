@@ -71,7 +71,7 @@ function getAuthError(result, fallback) {
     return null;
   }
 
-  return new Error(result.error.message || result.error.statusText || fallback);
+  return new Error(result.error.message || result.error.statusText || result.error.code || fallback);
 }
 
 export function AuthProvider({ children }) {
@@ -173,7 +173,7 @@ export function AuthProvider({ children }) {
         password,
         image: photo?.startsWith("http") ? photo : undefined,
       });
-      const error = getAuthError(result, "Registration failed. Please try another email.");
+      const error = getAuthError(result, "Registration failed. Check Vercel Better Auth environment variables.");
       if (error) {
         throw error;
       }
