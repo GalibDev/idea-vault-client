@@ -6,6 +6,7 @@ import { useToast } from "./Toast.jsx";
 
 const bookmarksKey = "ideavault-bookmarks";
 const likesKey = "ideavault-liked-ideas";
+const likedIdeaItemsKey = "ideavault-liked-idea-items";
 
 export default function IdeaCard({ idea, compact = false }) {
   const ideaId = String(idea._id || idea.id);
@@ -36,12 +37,17 @@ export default function IdeaCard({ idea, compact = false }) {
 
   const toggleLike = () => {
     const savedLikes = JSON.parse(localStorage.getItem(likesKey) || "{}");
+    const savedLikedItems = JSON.parse(localStorage.getItem(likedIdeaItemsKey) || "[]");
     const current = savedLikes[ideaId] || { liked: false, count: likeCount };
     const nextLiked = !current.liked;
     const nextCount = Math.max(0, Number(current.count || 0) + (nextLiked ? 1 : -1));
+    const nextLikedItems = nextLiked
+      ? [{ ...idea, id: ideaId }, ...savedLikedItems.filter((item) => String(item._id || item.id) !== ideaId)]
+      : savedLikedItems.filter((item) => String(item._id || item.id) !== ideaId);
 
     savedLikes[ideaId] = { liked: nextLiked, count: nextCount };
     localStorage.setItem(likesKey, JSON.stringify(savedLikes));
+    localStorage.setItem(likedIdeaItemsKey, JSON.stringify(nextLikedItems));
     setLiked(nextLiked);
     setLikeCount(nextCount);
     showToast?.(nextLiked ? "Idea liked." : "Like removed.");
