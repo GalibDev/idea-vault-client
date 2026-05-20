@@ -1,15 +1,7 @@
 "use client";
 
-import {
-  createUserWithEmailAndPassword,
-  onAuthStateChanged,
-  signInWithEmailAndPassword,
-  signInWithPopup,
-  signOut,
-  updateProfile,
-} from "firebase/auth";
-import { createContext, useContext, useEffect, useMemo, useState } from "react";
-import { auth, googleProvider, hasFirebaseConfig } from "../lib/firebase.js";
+import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
+import { authClient } from "../lib/auth-client.js";
 
 const AuthContext = createContext(null);
 const sessionKey = "ideavault-session";
@@ -20,19 +12,36 @@ function createDemoToken(email) {
   return `demo-jwt.${btoa(JSON.stringify({ email, issuedAt: Date.now() }))}.signature`;
 }
 
-function mapFirebaseUser(firebaseUser) {
-  const savedProfiles = typeof window !== "undefined" ? JSON.parse(localStorage.getItem(profilesKey) || "{}") : {};
-  const savedProfile = savedProfiles[firebaseUser.email] || {};
+function readJson(key, fallback) {
+  try {
+    return JSON.parse(localStorage.getItem(key) || JSON.stringify(fallback));
+  } catch {
+    return fallback;
+  }
+}
+
+function getSavedProfile(email) {
+  if (!email || typeof window === "undefined") {
+    return {};
+  }
+
+  const profiles = readJson(profilesKey, {});
+  return profiles[email] || {};
+}
+
+function mapBetterAuthUser(authUser) {
+  const savedProfile = getSavedProfile(authUser?.email);
+  const email = authUser?.email || savedProfile.email || "";
 
   return {
-    name: savedProfile.name || firebaseUser.displayName || firebaseUser.email?.split("@")[0] || "IdeaVault User",
-    email: firebaseUser.email,
-    photo: savedProfile.photo || firebaseUser.photoURL || "",
+    name: savedProfile.name || authUser?.name || email.split("@")[0] || "IdeaVault User",
+    email,
+    photo: savedProfile.photo || authUser?.image || "",
   };
 }
 
 function saveProfileCache(nextUser) {
-  const profiles = JSON.parse(localStorage.getItem(profilesKey) || "{}");
+  const profiles = readJson(profilesKey, {});
   profiles[nextUser.email] = nextUser;
   localStorage.setItem(profilesKey, JSON.stringify(profiles));
 }
@@ -57,89 +66,98 @@ async function getServerToken(nextUser) {
   }
 }
 
+function getAuthError(result, fallback) {
+  if (!result?.error) {
+    return null;
+  }
+
+  return new Error(result.error.message || result.error.statusText || fallback);
+}
+
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [token, setToken] = useState(null);
   const [authReady, setAuthReady] = useState(false);
-  const firebaseReady = hasFirebaseConfig();
 
-  useEffect(() => {
-    const saved = localStorage.getItem(sessionKey);
-    if (saved) {
-      const parsed = JSON.parse(saved);
-      setUser(parsed.user);
-      setToken(parsed.token);
-      setAuthReady(true);
+  const persistSession = useCallback(async (nextUser) => {
+    const nextToken = await getServerToken(nextUser);
+    setUser(nextUser);
+    setToken(nextToken);
+    saveProfileCache(nextUser);
+    localStorage.setItem(sessionKey, JSON.stringify({ user: nextUser, token: nextToken }));
+    return nextUser;
+  }, []);
+
+  const refreshSession = useCallback(async ({ clearWhenEmpty = true } = {}) => {
+    const result = await authClient.getSession();
+    const nextAuthUser = result?.data?.user;
+
+    if (!nextAuthUser?.email) {
+      if (clearWhenEmpty) {
+        setUser(null);
+        setToken(null);
+        localStorage.removeItem(sessionKey);
+      }
+      return null;
     }
 
-    if (!firebaseReady || !auth) {
-      setAuthReady(true);
-      return undefined;
+    return persistSession(mapBetterAuthUser(nextAuthUser));
+  }, [persistSession]);
+
+  useEffect(() => {
+    const saved = readJson(sessionKey, null);
+
+    if (saved?.user && saved?.token) {
+      setUser(saved.user);
+      setToken(saved.token);
     }
 
     const readyFallback = window.setTimeout(() => {
       setAuthReady(true);
     }, 3000);
 
-    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
-      if (!firebaseUser) {
-        if (!saved) {
+    refreshSession({ clearWhenEmpty: !saved?.user })
+      .catch(() => {
+        if (!saved?.user) {
           setUser(null);
           setToken(null);
           localStorage.removeItem(sessionKey);
         }
-        setAuthReady(true);
+      })
+      .finally(() => {
         window.clearTimeout(readyFallback);
-        return;
-      }
+        setAuthReady(true);
+      });
 
-      const nextUser = mapFirebaseUser(firebaseUser);
-      const nextToken = await getServerToken(nextUser);
-      setUser(nextUser);
-      setToken(nextToken);
-      localStorage.setItem(sessionKey, JSON.stringify({ user: nextUser, token: nextToken }));
-      setAuthReady(true);
-      window.clearTimeout(readyFallback);
-    });
-
-    return () => {
-      window.clearTimeout(readyFallback);
-      unsubscribe();
-    };
-  }, [firebaseReady]);
-
-  const persistDemoSession = async (nextUser) => {
-    const nextToken = await getServerToken(nextUser);
-    setUser(nextUser);
-    setToken(nextToken);
-    saveProfileCache(nextUser);
-    localStorage.setItem(sessionKey, JSON.stringify({ user: nextUser, token: nextToken }));
-  };
+    return () => window.clearTimeout(readyFallback);
+  }, [refreshSession]);
 
   const api = useMemo(() => ({
     user,
     token,
     authReady,
-    firebaseReady,
     async login(email, password) {
       if (!email || !password) {
         throw new Error("Email and password are required.");
       }
 
-      if (!firebaseReady || !auth) {
-        await persistDemoSession({ name: email.split("@")[0] || "IdeaVault User", email, photo: "" });
-        return;
+      const result = await authClient.signIn.email({ email, password });
+      const error = getAuthError(result, "Login failed. Please check your email and password.");
+      if (error) {
+        throw error;
       }
 
-      await signInWithEmailAndPassword(auth, email, password);
+      await refreshSession({ clearWhenEmpty: true });
     },
     async googleLogin() {
-      if (!firebaseReady || !auth) {
-        await persistDemoSession({ name: "Google Innovator", email: "google.user@ideavault.com", photo: "" });
-        return;
+      const result = await authClient.signIn.social({
+        provider: "google",
+        callbackURL: window.location.origin,
+      });
+      const error = getAuthError(result, "Google login failed. Check Better Auth Google credentials.");
+      if (error) {
+        throw error;
       }
-
-      await signInWithPopup(auth, googleProvider);
     },
     async register({ name, email, photo, password }) {
       if (!name || !email || !password) {
@@ -149,44 +167,38 @@ export function AuthProvider({ children }) {
         throw new Error("Password must be 6 characters with uppercase and lowercase letters.");
       }
 
-      if (!firebaseReady || !auth) {
-        await persistDemoSession({ name, email, photo });
-        return;
+      const result = await authClient.signUp.email({
+        name,
+        email,
+        password,
+        image: photo?.startsWith("http") ? photo : undefined,
+      });
+      const error = getAuthError(result, "Registration failed. Please try another email.");
+      if (error) {
+        throw error;
       }
 
-      const credential = await createUserWithEmailAndPassword(auth, email, password);
-      await updateProfile(credential.user, {
-        displayName: name,
-        photoURL: photo?.startsWith("http") ? photo : "",
-      });
-      const nextUser = { name, email, photo };
-      const nextToken = await getServerToken(nextUser);
-      setUser(nextUser);
-      setToken(nextToken);
-      saveProfileCache(nextUser);
-      localStorage.setItem(sessionKey, JSON.stringify({ user: nextUser, token: nextToken }));
+      await persistSession({ name, email, photo });
     },
     async updateProfileData(profile) {
       const nextUser = { ...user, ...profile };
 
-      if (firebaseReady && auth?.currentUser) {
-        await updateProfile(auth.currentUser, {
-          displayName: nextUser.name,
-          photoURL: nextUser.photo?.startsWith("http") ? nextUser.photo : "",
-        });
+      if (authClient.updateUser) {
+        await authClient.updateUser({
+          name: nextUser.name,
+          image: nextUser.photo?.startsWith("http") ? nextUser.photo : undefined,
+        }).catch(() => null);
       }
 
-      await persistDemoSession(nextUser);
+      await persistSession(nextUser);
     },
     async logout() {
-      if (firebaseReady && auth) {
-        await signOut(auth);
-      }
+      await authClient.signOut().catch(() => null);
       setUser(null);
       setToken(null);
       localStorage.removeItem(sessionKey);
     },
-  }), [authReady, firebaseReady, token, user]);
+  }), [authReady, persistSession, refreshSession, token, user]);
 
   return <AuthContext.Provider value={api}>{children}</AuthContext.Provider>;
 }
