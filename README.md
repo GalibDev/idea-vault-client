@@ -45,4 +45,4 @@ Email/password authentication runs through Better Auth. Add Google OAuth credent
 - Server-side GitHub repository: `https://github.com/GalibDev/idea-vault-server`
 - Client commits required: minimum 15 notable commits.
 - Server commits required: minimum 8 notable commits.
-- Replace the live site URL above after deploying on Vercel, Render, Netlify, or another host.
+- Live site URL is included above for Vercel deployment.

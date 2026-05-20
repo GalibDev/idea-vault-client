@@ -38,7 +38,7 @@ export default function Navbar() {
         </Link>
 
         <div className="hidden items-center gap-7 text-sm font-semibold text-slate-700 md:flex">
-          {navItems.map((item) => (
+          {navItems.filter((item) => !item.private || user).map((item) => (
             <Link
               key={item.href}
               href={item.href}
@@ -132,7 +132,7 @@ export default function Navbar() {
       {mobileOpen ? (
         <div className="border-t border-slate-200 bg-white px-4 py-4 shadow-lg dark-surface md:hidden">
           <div className="mx-auto grid max-w-7xl gap-2 text-sm font-bold text-slate-700">
-            {navItems.map((item) => (
+            {navItems.filter((item) => !item.private || user).map((item) => (
               <Link
                 key={item.href}
                 href={item.href}
