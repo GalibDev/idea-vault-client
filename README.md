@@ -37,8 +37,8 @@ Enable Email/Password and Google providers from Firebase Authentication before t
 
 ## Submission Checklist
 
-- Client-side GitHub repository: add your repository link here.
-- Server-side GitHub repository: add your repository link here.
+- Client-side GitHub repository: `https://github.com/GalibDev/idea-vault-client`
+- Server-side GitHub repository: `https://github.com/GalibDev/idea-vault-server`
 - Client commits required: minimum 15 notable commits.
 - Server commits required: minimum 8 notable commits.
 - Replace the live site URL above after deploying on Vercel, Render, Netlify, or another host.
