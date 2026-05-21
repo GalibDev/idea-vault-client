@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import ProtectedRoute from "../../components/ProtectedRoute.jsx";
 import { ideas } from "../../data/ideas.js";
@@ -42,15 +43,17 @@ export default function MyInteractionsPage() {
     { id: "Likes", label: "Likes" },
   ];
 
+  const ideaHref = (idea) => `/ideas/${idea._id || idea.id}`;
+
   const renderIdeaRow = (idea, meta) => (
-    <article key={idea._id || idea.id} className="section-card flex gap-4 p-4">
+    <Link key={idea._id || idea.id} href={ideaHref(idea)} className="section-card flex gap-4 p-4 transition hover:-translate-y-0.5 hover:border-[#6366F1] hover:shadow-xl">
       <img src={idea.image} alt={idea.title} className="h-20 w-28 rounded-md object-cover" />
       <div>
-        <h2 className="font-extrabold text-slate-950 dark-text">{idea.title}</h2>
+        <h2 className="font-extrabold text-slate-950 transition hover:text-[#6366F1] dark-text">{idea.title}</h2>
         <p className="text-xs text-slate-400">{meta}</p>
         <p className="mt-2 text-sm text-slate-600">{idea.summary}</p>
       </div>
-    </article>
+    </Link>
   );
 
   return (
@@ -72,14 +75,14 @@ export default function MyInteractionsPage() {
           <div className="space-y-4">
             {activeTab === "Comments" ? (
               commentedIdeas.length ? commentedIdeas.map((idea) => (
-                <article key={idea._id || idea.id} className="section-card flex gap-4 p-4">
+                <Link key={idea._id || idea.id} href={ideaHref(idea)} className="section-card flex gap-4 p-4 transition hover:-translate-y-0.5 hover:border-[#6366F1] hover:shadow-xl">
                   <img src={idea.image} alt={idea.title} className="h-20 w-28 rounded-md object-cover" />
                   <div>
-                    <h2 className="font-extrabold text-slate-950 dark-text">{idea.title}</h2>
+                    <h2 className="font-extrabold text-slate-950 transition hover:text-[#6366F1] dark-text">{idea.title}</h2>
                     <p className="text-xs text-slate-400">You commented on {idea.commentDate}</p>
                     <p className="mt-2 text-sm text-slate-600">{idea.commentText}</p>
                   </div>
-                </article>
+                </Link>
               )) : (
                 <section className="section-card p-8 text-center">
                   <h2 className="text-xl font-extrabold text-slate-950 dark-text">No commented ideas yet</h2>
