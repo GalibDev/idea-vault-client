@@ -11,6 +11,21 @@ import { comments as seedComments, ideas } from "../../../data/ideas.js";
 const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 const commentActivityKey = "ideavault-commented-ideas";
 
+function normalizeComment(comment, fallbackUser) {
+  const ownerEmail = comment.ownerEmail || comment.userEmail || fallbackUser?.email || "";
+  const userName = comment.user || comment.userName || fallbackUser?.name || ownerEmail || "IdeaVault User";
+  const createdAt = comment.createdAt || comment.date || new Date().toISOString();
+
+  return {
+    ...comment,
+    user: userName,
+    userName,
+    ownerEmail,
+    userEmail: ownerEmail,
+    date: comment.date || new Date(createdAt).toLocaleString(),
+  };
+}
+
 export default function IdeaDetailsPage({ params }) {
   const router = useRouter();
   const seedIdea = ideas.find((item) => String(item.id) === String(params.id));
@@ -61,13 +76,17 @@ export default function IdeaDetailsPage({ params }) {
         headers: { Authorization: `Bearer ${token}` },
       })
         .then((response) => response.json())
-        .then((data) => setComments(Array.isArray(data) ? data : savedComments))
+        .then((data) => {
+          const serverComments = Array.isArray(data) ? data.map((comment) => normalizeComment(comment, user)) : [];
+          const mergedComments = serverComments.length ? serverComments : savedComments;
+          persistLocalComments(mergedComments);
+        })
         .catch(() => setComments(savedComments));
       return;
     }
 
-    setComments(savedComments.length ? savedComments : fallbackComments);
-  }, [idea, ideaId, localCommentsKey, seedIdea, token]);
+    setComments(savedComments.length ? savedComments : fallbackComments.map((comment) => normalizeComment(comment, user)));
+  }, [idea, ideaId, localCommentsKey, seedIdea, token, user]);
 
   const ideaTags = useMemo(() => {
     if (!idea?.tags) {
@@ -102,14 +121,14 @@ export default function IdeaDetailsPage({ params }) {
       return;
     }
 
-    const nextComment = {
+    const nextComment = normalizeComment({
       id: Date.now(),
       user: user.name,
       ownerEmail: user.email,
       userEmail: user.email,
       date: new Date().toLocaleString(),
       text: commentText,
-    };
+    }, user);
 
     try {
       if (token && !seedIdea) {
@@ -126,8 +145,9 @@ export default function IdeaDetailsPage({ params }) {
           throw new Error("Could not save comment.");
         }
 
-        const savedComment = await response.json();
-        setComments([savedComment, ...comments]);
+        const savedComment = normalizeComment(await response.json(), user);
+        const nextComments = [savedComment, ...comments];
+        persistLocalComments(nextComments);
         saveCommentActivity(savedComment);
       } else {
         const nextComments = [nextComment, ...comments];
@@ -146,6 +166,8 @@ export default function IdeaDetailsPage({ params }) {
     const commentId = editing._id || editing.id;
 
     try {
+      let editedComment = normalizeComment(editing, user);
+
       if (token && editing._id) {
         const response = await fetch(`${apiUrl}/comments/${commentId}`, {
           method: "PATCH",
@@ -159,9 +181,14 @@ export default function IdeaDetailsPage({ params }) {
         if (!response.ok) {
           throw new Error("Could not update comment.");
         }
+
+        const data = await response.json();
+        if (data.comment) {
+          editedComment = normalizeComment(data.comment, user);
+        }
       }
 
-      const nextComments = comments.map((comment) => String(comment._id || comment.id) === String(commentId) ? editing : comment);
+      const nextComments = comments.map((comment) => String(comment._id || comment.id) === String(commentId) ? editedComment : comment);
       persistLocalComments(nextComments);
       setEditing(null);
       showToast("Comment updated successfully.");
