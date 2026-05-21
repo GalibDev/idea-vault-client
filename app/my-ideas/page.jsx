@@ -163,12 +163,26 @@ export default function MyIdeasPage() {
             <div className="modal-backdrop">
               <div className="section-card w-full max-w-lg p-6">
                 <h2 className="text-xl font-extrabold text-slate-950">Update Idea</h2>
-                <input className="field mt-4" value={editing.title} onChange={(event) => setEditing({ ...editing, title: event.target.value })} />
-                <textarea className="field mt-3 min-h-24" value={editing.summary} onChange={(event) => setEditing({ ...editing, summary: event.target.value })} />
-                <select className="field mt-3" value={editing.status || "Published"} onChange={(event) => setEditing({ ...editing, status: event.target.value })}>
-                  <option>Published</option>
-                  <option>Draft</option>
-                </select>
+                <div className="mt-4 grid max-h-[65vh] gap-3 overflow-y-auto pr-1">
+                  <input className="field" placeholder="Idea title" value={editing.title || ""} onChange={(event) => setEditing({ ...editing, title: event.target.value })} />
+                  <textarea className="field min-h-20" placeholder="Short description" value={editing.summary || ""} onChange={(event) => setEditing({ ...editing, summary: event.target.value })} />
+                  <textarea className="field min-h-24" placeholder="Detailed description" value={editing.description || ""} onChange={(event) => setEditing({ ...editing, description: event.target.value })} />
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    <select className="field" value={editing.category || "AI"} onChange={(event) => setEditing({ ...editing, category: event.target.value, badge: event.target.value })}>
+                      {["Tech", "Health", "AI", "Education", "Environment", "Fintech", "Travel", "AgriTech", "CivicTech", "SaaS"].map((item) => <option key={item}>{item}</option>)}
+                    </select>
+                    <select className="field" value={editing.status || "Published"} onChange={(event) => setEditing({ ...editing, status: event.target.value })}>
+                      <option>Published</option>
+                      <option>Draft</option>
+                    </select>
+                  </div>
+                  <input className="field" placeholder="Tags" value={Array.isArray(editing.tags) ? editing.tags.join(", ") : editing.tags || ""} onChange={(event) => setEditing({ ...editing, tags: event.target.value })} />
+                  <input className="field" placeholder="Image URL" value={editing.image || ""} onChange={(event) => setEditing({ ...editing, image: event.target.value })} />
+                  <input className="field" placeholder="Estimated budget" value={editing.budget || ""} onChange={(event) => setEditing({ ...editing, budget: event.target.value })} />
+                  <input className="field" placeholder="Target audience" value={editing.targetAudience || ""} onChange={(event) => setEditing({ ...editing, targetAudience: event.target.value })} />
+                  <input className="field" placeholder="Problem statement" value={editing.problem || ""} onChange={(event) => setEditing({ ...editing, problem: event.target.value })} />
+                  <input className="field" placeholder="Proposed solution" value={editing.solution || ""} onChange={(event) => setEditing({ ...editing, solution: event.target.value })} />
+                </div>
                 <div className="mt-4 flex justify-end gap-3">
                   <button className="btn-soft px-4 py-2 text-sm" onClick={() => setEditing(null)}>Cancel</button>
                   <button className="btn-primary px-4 py-2 text-sm" onClick={saveEdit}>Save</button>

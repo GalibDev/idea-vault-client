@@ -78,7 +78,7 @@ export default function AddIdeaPage() {
               <label className="block">
                 <span className="mb-2 block text-sm font-bold text-slate-700">Category</span>
                 <select className="field" value={form.category} onChange={(event) => update("category", event.target.value)}>
-                  {["Tech", "Health", "AI", "Education", "Environment", "Fintech", "Travel"].map((item) => <option key={item}>{item}</option>)}
+                  {["Tech", "Health", "AI", "Education", "Environment", "Fintech", "Travel", "AgriTech", "CivicTech", "SaaS"].map((item) => <option key={item}>{item}</option>)}
                 </select>
               </label>
               <label className="block">
