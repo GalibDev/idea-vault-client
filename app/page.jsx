@@ -36,12 +36,24 @@ const extraSections = [
 
 export default function Home() {
   const [activeSlide, setActiveSlide] = useState(0);
+  const [trendingIdeas, setTrendingIdeas] = useState(ideas.slice(0, 6));
+  const [loadingTrending, setLoadingTrending] = useState(true);
 
   useEffect(() => {
     const timer = window.setInterval(() => {
       setActiveSlide((current) => (current + 1) % slides.length);
     }, 4500);
     return () => window.clearInterval(timer);
+  }, []);
+
+  useEffect(() => {
+    fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/ideas?limit=6`)
+      .then((response) => response.json())
+      .then((data) => {
+        setTrendingIdeas(Array.isArray(data) && data.length ? data : ideas.slice(0, 6));
+      })
+      .catch(() => setTrendingIdeas(ideas.slice(0, 6)))
+      .finally(() => setLoadingTrending(false));
   }, []);
 
   const slide = slides[activeSlide];
@@ -73,11 +85,18 @@ export default function Home() {
             <h2 className="text-xl font-extrabold text-slate-950 dark-text">Trending Ideas</h2>
             <Link href="/ideas" className="text-sm font-bold text-[#6366F1]">View All</Link>
           </div>
-          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
-            {ideas.slice(0, 6).map((idea) => (
-              <IdeaCard key={idea.id} idea={idea} compact />
-            ))}
-          </div>
+          {loadingTrending ? (
+            <section className="section-card p-8 text-center">
+              <div className="loading-spinner" />
+              <p className="text-sm font-semibold text-slate-500">Loading trending ideas...</p>
+            </section>
+          ) : (
+            <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+              {trendingIdeas.slice(0, 6).map((idea) => (
+                <IdeaCard key={idea._id || idea.id} idea={idea} compact />
+              ))}
+            </div>
+          )}
         </section>
 
         <section className="section-card grid gap-4 p-6 md:grid-cols-3">
