@@ -4,6 +4,8 @@ import { useEffect, useMemo, useState } from "react";
 import IdeaCard from "../../components/IdeaCard.jsx";
 import { ideas } from "../../data/ideas.js";
 
+const ideasPerPage = 6;
+
 export default function IdeasPage() {
   const [draftSearch, setDraftSearch] = useState("");
   const [draftCategory, setDraftCategory] = useState("All Categories");
@@ -11,6 +13,7 @@ export default function IdeasPage() {
   const [filters, setFilters] = useState({ search: "", category: "All Categories", sort: "Latest" });
   const [remoteIdeas, setRemoteIdeas] = useState([]);
   const [loadingIdeas, setLoadingIdeas] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
 
   useEffect(() => {
     setLoadingIdeas(true);
@@ -44,6 +47,9 @@ export default function IdeasPage() {
       return bDate - aDate;
     });
   }, [allIdeas, filters]);
+  const totalPages = Math.max(1, Math.ceil(filteredIdeas.length / ideasPerPage));
+  const currentIdeas = filteredIdeas.slice((currentPage - 1) * ideasPerPage, currentPage * ideasPerPage);
+  const visiblePages = Array.from({ length: totalPages }, (_, index) => index + 1);
 
   const applyFilters = () => {
     setFilters({
@@ -51,6 +57,7 @@ export default function IdeasPage() {
       category: draftCategory,
       sort: draftSort,
     });
+    setCurrentPage(1);
   };
 
   const clearFilters = () => {
@@ -58,6 +65,7 @@ export default function IdeasPage() {
     setDraftCategory("All Categories");
     setDraftSort("Latest");
     setFilters({ search: "", category: "All Categories", sort: "Latest" });
+    setCurrentPage(1);
   };
 
   return (
@@ -102,21 +110,31 @@ export default function IdeasPage() {
           </section>
         ) : (
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {filteredIdeas.map((idea) => (
+            {currentIdeas.map((idea) => (
               <IdeaCard key={idea._id || idea.id} idea={idea} />
             ))}
           </div>
         )}
 
-        <div className="flex justify-center gap-3 pt-4">
-          {["1", "2", "3", "...", "8", ">"].map((page) => (
+        <div className="flex flex-wrap justify-center gap-3 pt-4">
+          {visiblePages.map((page) => (
             <button
               key={page}
-              className={page === "1" ? "btn-primary h-9 w-9 text-sm" : "h-9 w-9 rounded-md border border-slate-200 bg-white text-sm font-bold text-slate-600"}
+              type="button"
+              onClick={() => setCurrentPage(page)}
+              className={page === currentPage ? "btn-primary h-9 w-9 text-sm" : "h-9 w-9 rounded-md border border-slate-200 bg-white text-sm font-bold text-slate-600"}
             >
               {page}
             </button>
           ))}
+          <button
+            type="button"
+            className="h-9 w-9 rounded-md border border-slate-200 bg-white text-sm font-bold text-slate-600 disabled:cursor-not-allowed disabled:opacity-40"
+            disabled={currentPage >= totalPages}
+            onClick={() => setCurrentPage((page) => Math.min(totalPages, page + 1))}
+          >
+            {">"}
+          </button>
         </div>
       </div>
     </div>
