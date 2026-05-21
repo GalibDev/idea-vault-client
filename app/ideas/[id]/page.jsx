@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import ProtectedRoute from "../../../components/ProtectedRoute.jsx";
 import { useToast } from "../../../components/Toast.jsx";
@@ -11,6 +12,7 @@ const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 const commentActivityKey = "ideavault-commented-ideas";
 
 export default function IdeaDetailsPage({ params }) {
+  const router = useRouter();
   const seedIdea = ideas.find((item) => String(item.id) === String(params.id));
   const { token, user } = useAuth();
   const { showToast } = useToast();
@@ -18,6 +20,8 @@ export default function IdeaDetailsPage({ params }) {
   const [loadingIdea, setLoadingIdea] = useState(!seedIdea);
   const [commentText, setCommentText] = useState("");
   const [editing, setEditing] = useState(null);
+  const [editingIdea, setEditingIdea] = useState(null);
+  const [confirmDeleteIdea, setConfirmDeleteIdea] = useState(false);
   const [comments, setComments] = useState([]);
   const ideaId = String(params.id);
   const localCommentsKey = `ideavault-comments-${ideaId}`;
@@ -187,6 +191,57 @@ export default function IdeaDetailsPage({ params }) {
     }
   };
 
+  const isIdeaOwner = user?.email && idea?.authorEmail === user.email;
+
+  const saveIdeaEdit = async () => {
+    try {
+      if (token && editingIdea?._id) {
+        const response = await fetch(`${apiUrl}/ideas/${editingIdea._id}`, {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify(editingIdea),
+        });
+
+        if (!response.ok) {
+          throw new Error("Could not update idea.");
+        }
+      }
+
+      const savedIdeas = JSON.parse(localStorage.getItem("ideavault-my-ideas") || "[]");
+      localStorage.setItem("ideavault-my-ideas", JSON.stringify(savedIdeas.map((item) => String(item._id || item.id) === String(ideaId) ? editingIdea : item)));
+      setIdea(editingIdea);
+      setEditingIdea(null);
+      showToast("Idea updated successfully.");
+    } catch (error) {
+      showToast(error.message, "error");
+    }
+  };
+
+  const deleteIdea = async () => {
+    try {
+      if (token && idea?._id) {
+        const response = await fetch(`${apiUrl}/ideas/${idea._id}`, {
+          method: "DELETE",
+          headers: { Authorization: `Bearer ${token}` },
+        });
+
+        if (!response.ok) {
+          throw new Error("Could not delete idea.");
+        }
+      }
+
+      const savedIdeas = JSON.parse(localStorage.getItem("ideavault-my-ideas") || "[]");
+      localStorage.setItem("ideavault-my-ideas", JSON.stringify(savedIdeas.filter((item) => String(item._id || item.id) !== String(ideaId))));
+      showToast("Idea deleted successfully.");
+      router.push("/my-ideas");
+    } catch (error) {
+      showToast(error.message, "error");
+    }
+  };
+
   if (loadingIdea) {
     return (
       <ProtectedRoute>
@@ -233,6 +288,12 @@ export default function IdeaDetailsPage({ params }) {
                 <span>Comments {comments.length}</span>
               </div>
             </div>
+            {isIdeaOwner ? (
+              <div className="flex flex-wrap gap-3">
+                <button className="btn-soft px-4 py-2 text-sm" onClick={() => setEditingIdea(idea)}>Edit Idea</button>
+                <button className="rounded-md bg-rose-50 px-4 py-2 text-sm font-bold text-rose-600" onClick={() => setConfirmDeleteIdea(true)}>Delete Idea</button>
+              </div>
+            ) : null}
 
             <img src={idea.image} alt={idea.title} className="h-64 w-full rounded-lg object-cover sm:h-80 lg:h-[420px]" />
 
@@ -297,6 +358,45 @@ export default function IdeaDetailsPage({ params }) {
               );
             })}
           </section>
+          {editingIdea ? (
+            <div className="modal-backdrop">
+              <div className="section-card w-full max-w-lg p-6">
+                <h2 className="text-xl font-extrabold text-slate-950">Edit Idea</h2>
+                <div className="mt-4 grid max-h-[65vh] gap-3 overflow-y-auto pr-1">
+                  <input className="field" placeholder="Idea title" value={editingIdea.title || ""} onChange={(event) => setEditingIdea({ ...editingIdea, title: event.target.value })} />
+                  <textarea className="field min-h-20" placeholder="Short description" value={editingIdea.summary || ""} onChange={(event) => setEditingIdea({ ...editingIdea, summary: event.target.value })} />
+                  <textarea className="field min-h-24" placeholder="Detailed description" value={editingIdea.description || ""} onChange={(event) => setEditingIdea({ ...editingIdea, description: event.target.value })} />
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    <select className="field" value={editingIdea.category || "AI"} onChange={(event) => setEditingIdea({ ...editingIdea, category: event.target.value, badge: event.target.value })}>
+                      {["Tech", "Health", "AI", "Education", "Environment", "Fintech", "Travel", "AgriTech", "CivicTech", "SaaS"].map((item) => <option key={item}>{item}</option>)}
+                    </select>
+                    <input className="field" placeholder="Budget" value={editingIdea.budget || ""} onChange={(event) => setEditingIdea({ ...editingIdea, budget: event.target.value })} />
+                  </div>
+                  <input className="field" placeholder="Tags" value={Array.isArray(editingIdea.tags) ? editingIdea.tags.join(", ") : editingIdea.tags || ""} onChange={(event) => setEditingIdea({ ...editingIdea, tags: event.target.value })} />
+                  <input className="field" placeholder="Image URL" value={editingIdea.image || ""} onChange={(event) => setEditingIdea({ ...editingIdea, image: event.target.value })} />
+                  <input className="field" placeholder="Target audience" value={editingIdea.targetAudience || ""} onChange={(event) => setEditingIdea({ ...editingIdea, targetAudience: event.target.value })} />
+                  <input className="field" placeholder="Problem statement" value={editingIdea.problem || ""} onChange={(event) => setEditingIdea({ ...editingIdea, problem: event.target.value })} />
+                  <input className="field" placeholder="Proposed solution" value={editingIdea.solution || ""} onChange={(event) => setEditingIdea({ ...editingIdea, solution: event.target.value })} />
+                </div>
+                <div className="mt-4 flex justify-end gap-3">
+                  <button className="btn-soft px-4 py-2 text-sm" onClick={() => setEditingIdea(null)}>Cancel</button>
+                  <button className="btn-primary px-4 py-2 text-sm" onClick={saveIdeaEdit}>Save</button>
+                </div>
+              </div>
+            </div>
+          ) : null}
+          {confirmDeleteIdea ? (
+            <div className="modal-backdrop">
+              <div className="section-card w-full max-w-md p-6">
+                <h2 className="text-xl font-extrabold text-slate-950">Delete Idea?</h2>
+                <p className="mt-2 text-sm text-slate-500">This will permanently remove "{idea.title}" from your ideas.</p>
+                <div className="mt-5 flex justify-end gap-3">
+                  <button className="btn-soft px-4 py-2 text-sm" onClick={() => setConfirmDeleteIdea(false)}>Cancel</button>
+                  <button className="rounded-md bg-rose-600 px-4 py-2 text-sm font-bold text-white" onClick={deleteIdea}>Confirm Delete</button>
+                </div>
+              </div>
+            </div>
+          ) : null}
         </div>
       </div>
     </ProtectedRoute>
