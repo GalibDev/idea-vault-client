@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useAuth } from "../../context/AuthContext.jsx";
 import { useToast } from "../../components/Toast.jsx";
+import ImageUploadField from "../../components/ImageUploadField.jsx";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -44,19 +45,12 @@ export default function RegisterPage() {
           <form className="space-y-4" onSubmit={handleRegister}>
             <input className="field" placeholder="Enter your name" value={form.name} onChange={(event) => setForm({ ...form, name: event.target.value })} />
             <input className="field" type="email" placeholder="Enter your email" value={form.email} onChange={(event) => setForm({ ...form, email: event.target.value })} />
-            <label className="block">
-              <span className="mb-2 block text-sm font-bold text-slate-700">Photo URL</span>
-              <input
-                className="field"
-                type="text"
-                placeholder="https://example.com/profile.jpg or /images/profile.jpg"
-                value={form.photo}
-                onChange={(event) => setForm({ ...form, photo: event.target.value })}
-              />
-            </label>
-            {form.photo ? (
-              <img src={form.photo} alt="Profile preview" className="mx-auto h-24 w-24 rounded-full object-cover" />
-            ) : null}
+            <ImageUploadField
+              label="Profile Image"
+              value={form.photo}
+              onChange={(photo) => setForm({ ...form, photo })}
+              previewClassName="mx-auto mt-3 h-24 w-24 rounded-full object-cover"
+            />
             <div className="password-field">
               <input
                 className="field pr-12"

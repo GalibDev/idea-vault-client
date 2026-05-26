@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
+import ImageUploadField from "../../../components/ImageUploadField.jsx";
 import ProtectedRoute from "../../../components/ProtectedRoute.jsx";
 import { useToast } from "../../../components/Toast.jsx";
 import { useAuth } from "../../../context/AuthContext.jsx";
@@ -400,7 +401,7 @@ export default function IdeaDetailsPage({ params }) {
                     <input className="field" placeholder="Budget" value={editingIdea.budget || ""} onChange={(event) => setEditingIdea({ ...editingIdea, budget: event.target.value })} />
                   </div>
                   <input className="field" placeholder="Tags" value={Array.isArray(editingIdea.tags) ? editingIdea.tags.join(", ") : editingIdea.tags || ""} onChange={(event) => setEditingIdea({ ...editingIdea, tags: event.target.value })} />
-                  <input className="field" placeholder="Image URL" value={editingIdea.image || ""} onChange={(event) => setEditingIdea({ ...editingIdea, image: event.target.value })} />
+                  <ImageUploadField label="Idea Image" value={editingIdea.image || ""} onChange={(image) => setEditingIdea({ ...editingIdea, image })} />
                   <input className="field" placeholder="Target audience" value={editingIdea.targetAudience || ""} onChange={(event) => setEditingIdea({ ...editingIdea, targetAudience: event.target.value })} />
                   <input className="field" placeholder="Problem statement" value={editingIdea.problem || ""} onChange={(event) => setEditingIdea({ ...editingIdea, problem: event.target.value })} />
                   <input className="field" placeholder="Proposed solution" value={editingIdea.solution || ""} onChange={(event) => setEditingIdea({ ...editingIdea, solution: event.target.value })} />

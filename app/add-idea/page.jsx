@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import ImageUploadField from "../../components/ImageUploadField.jsx";
 import ProtectedRoute from "../../components/ProtectedRoute.jsx";
 import { useToast } from "../../components/Toast.jsx";
 import { useAuth } from "../../context/AuthContext.jsx";
@@ -87,21 +88,7 @@ export default function AddIdeaPage() {
               </label>
             </div>
             <div className="grid gap-4 md:grid-cols-2">
-              <div>
-                <label className="block">
-                  <span className="mb-2 block text-sm font-bold text-slate-700">Image URL</span>
-                  <input
-                    className="field"
-                    type="text"
-                    placeholder="https://example.com/idea-image.jpg or /images/idea-image.jpg"
-                    value={form.image}
-                    onChange={(event) => update("image", event.target.value)}
-                  />
-                </label>
-                {form.image ? (
-                  <img src={form.image} alt="Idea preview" className="mt-3 h-36 w-full rounded-md object-cover" />
-                ) : null}
-              </div>
+              <ImageUploadField label="Idea Image" value={form.image} onChange={(image) => update("image", image)} />
               <label className="block">
                 <span className="mb-2 block text-sm font-bold text-slate-700">Estimated Budget</span>
                 <input className="field" placeholder="$10,000 - $20,000" value={form.budget} onChange={(event) => update("budget", event.target.value)} />

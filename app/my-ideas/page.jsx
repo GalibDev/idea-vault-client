@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import ImageUploadField from "../../components/ImageUploadField.jsx";
 import ProtectedRoute from "../../components/ProtectedRoute.jsx";
 import { useToast } from "../../components/Toast.jsx";
 import { useAuth } from "../../context/AuthContext.jsx";
@@ -177,7 +178,7 @@ export default function MyIdeasPage() {
                     </select>
                   </div>
                   <input className="field" placeholder="Tags" value={Array.isArray(editing.tags) ? editing.tags.join(", ") : editing.tags || ""} onChange={(event) => setEditing({ ...editing, tags: event.target.value })} />
-                  <input className="field" placeholder="Image URL" value={editing.image || ""} onChange={(event) => setEditing({ ...editing, image: event.target.value })} />
+                  <ImageUploadField label="Idea Image" value={editing.image || ""} onChange={(image) => setEditing({ ...editing, image })} />
                   <input className="field" placeholder="Estimated budget" value={editing.budget || ""} onChange={(event) => setEditing({ ...editing, budget: event.target.value })} />
                   <input className="field" placeholder="Target audience" value={editing.targetAudience || ""} onChange={(event) => setEditing({ ...editing, targetAudience: event.target.value })} />
                   <input className="field" placeholder="Problem statement" value={editing.problem || ""} onChange={(event) => setEditing({ ...editing, problem: event.target.value })} />

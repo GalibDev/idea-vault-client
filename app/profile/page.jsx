@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import ImageUploadField from "../../components/ImageUploadField.jsx";
 import ProtectedRoute from "../../components/ProtectedRoute.jsx";
 import { useToast } from "../../components/Toast.jsx";
 import { useAuth } from "../../context/AuthContext.jsx";
@@ -63,21 +64,12 @@ export default function ProfilePage() {
                   <span className="mb-2 block text-sm font-bold text-slate-700">Email</span>
                   <input className="field" value={form.email} onChange={(event) => setForm({ ...form, email: event.target.value })} />
                 </label>
-                <div>
-                  <label className="block">
-                    <span className="mb-2 block text-sm font-bold text-slate-700">Photo URL</span>
-                    <input
-                      className="field"
-                      type="text"
-                      placeholder="https://example.com/profile.jpg or /images/profile.jpg"
-                      value={form.photo}
-                      onChange={(event) => setForm({ ...form, photo: event.target.value })}
-                    />
-                  </label>
-                  {form.photo ? (
-                    <img src={form.photo} alt="Profile preview" className="mt-3 h-28 w-28 rounded-full object-cover" />
-                  ) : null}
-                </div>
+                <ImageUploadField
+                  label="Profile Image"
+                  value={form.photo}
+                  onChange={(photo) => setForm({ ...form, photo })}
+                  previewClassName="mt-3 h-28 w-28 rounded-full object-cover"
+                />
                 <button className="btn-primary px-5 py-3 text-sm" type="submit">Update Profile</button>
               </form>
             </div>
