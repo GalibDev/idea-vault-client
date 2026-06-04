@@ -46,3 +46,5 @@ Email/password authentication runs through Better Auth. Add Google OAuth credent
 - Client commits required: minimum 15 notable commits.
 - Server commits required: minimum 8 notable commits.
 - Live site URL is included above for Vercel deployment.
+
+- updated on 6-4-26
